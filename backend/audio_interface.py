@@ -105,8 +105,16 @@ class AudioEngine:
                     bands_list = []
                     for param_key, gain_db in params.items():
                         try:
-                            freq_str = param_key.split('_', 1)[1].replace('hz', '').replace('khz', '000').replace('.', '')
-                            freq = float(freq_str)
+                            # --- LÓGICA DE INTERPRETAÇÃO DE FREQUÊNCIA CORRIGIDA ---
+                            freq_part = param_key.split('_', 1)[1] # Ex: '1.6khz' ou '400hz'
+                            
+                            if 'khz' in freq_part:
+                                numeric_part = freq_part.replace('khz', '') # Ex: '1.6'
+                                freq = float(numeric_part) * 1000           # Ex: 1600.0
+                            else:
+                                numeric_part = freq_part.replace('hz', '')  # Ex: '400'
+                                freq = float(numeric_part)                  # Ex: 400.0
+                            
                             bands_list.append({'type': 'peak', 'freq': freq, 'gain_db': gain_db, 'q': 1.4})
                         except (IndexError, ValueError):
                             continue
