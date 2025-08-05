@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pedalboard Virtual</title>
+  <link rel="stylesheet" href="/frontend/css/style.css" />
+
+</head>
+<body>
+<button id="toggle-audio-btn">Iniciar Áudio</button>
+<label for="volumeControl">Volume Master:</label>
+<input id="volumeControl" type="range" min="0" max="1" step="0.01" value="0.8" />
+
+  <!-- Seletor de dispositivos de áudio -->
+  <div class="device-selectors" aria-label="Seleção de dispositivos de áudio">
+    <div>
+      <label for="input-device">Dispositivo de Entrada:</label>
+      <select id="input-device" aria-live="polite" aria-atomic="true" aria-describedby="input-device-desc"></select>
+      <span id="input-device-desc" class="sr-only">Escolha o microfone ou dispositivo de entrada de áudio</span>
+    </div>
+    <div>
+      <label for="output-device">Dispositivo de Saída:</label>
+      <select id="output-device" aria-live="polite" aria-atomic="true" aria-describedby="output-device-desc"></select>
+      <span id="output-device-desc" class="sr-only">Escolha o alto-falante ou dispositivo de saída de áudio</span>
+    </div>
+  </div>
+
+  <main>
+    <h1 class="title">🎸 Pedalboard Virtual</h1>
+
+    <section class="pedalboard" aria-label="Pedalboard de efeitos">
+
+      <article class="pedal" id="overdrive">
+        <img src="assets/pedals/overdrive.png" alt="Overdrive" />
+        <h2>Overdrive</h2>
+        <div class="control-group">
+          <label for="overdrive-gain">Ganho</label>
+          <input id="overdrive-gain" type="range" min="0" max="10" step="0.1" value="5" aria-valuemin="0" aria-valuemax="10" aria-valuenow="5" aria-label="Ganho do Overdrive" />
+        </div>
+        <div class="control-group">
+          <label for="overdrive-tone">Tonalidade</label>
+          <input id="overdrive-tone" type="range" min="0" max="10" step="0.1" value="5" aria-valuemin="0" aria-valuemax="10" aria-valuenow="5" aria-label="Tonalidade do Overdrive" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="overdrive" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="distortion">
+        <img src="assets/pedals/distortion.png" alt="Distortion" />
+        <h2>Distortion</h2>
+        <div class="led-indicator"></div>
+        <div class="control-group">
+          <label for="distortion-distortion">Distorção</label>
+          <input id="distortion-distortion" type="range" min="0" max="10" step="0.1" value="7" aria-valuemin="0" aria-valuemax="10" aria-valuenow="7" aria-label="Distorção do Distortion" />
+        </div>
+        <div class="control-group">
+          <label for="distortion-volume">Volume</label>
+          <input id="distortion-volume" type="range" min="0" max="10" step="0.1" value="8" aria-valuemin="0" aria-valuemax="10" aria-valuenow="8" aria-label="Volume do Distortion" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="distortion" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="equalizer">
+        <img src="assets/pedals/equalizer.png" alt="Equalizer" />
+        <h2>Graphic EQ</h2>
+        <div class="graphic-eq-container">
+          <div class="eq-band">
+            <label for="eq-band-100">100Hz</label>
+            <input id="eq-band-100" type="range" min="-15" max="15" step="1" value="0" data-freq="100" data-q="1.4" aria-label="Banda 100Hz" />
+          </div>
+          <div class="eq-band">
+            <label for="eq-band-200">200Hz</label>
+            <input id="eq-band-200" type="range" min="-15" max="15" step="1" value="0" data-freq="200" data-q="1.4" aria-label="Banda 200Hz" />
+          </div>
+          <div class="eq-band">
+            <label for="eq-band-400">400Hz</label>
+            <input id="eq-band-400" type="range" min="-15" max="15" step="1" value="0" data-freq="400" data-q="1.4" aria-label="Banda 400Hz" />
+          </div>
+          <div class="eq-band">
+            <label for="eq-band-800">800Hz</label>
+            <input id="eq-band-800" type="range" min="-15" max="15" step="1" value="0" data-freq="800" data-q="1.4" aria-label="Banda 800Hz" />
+          </div>
+          <div class="eq-band">
+            <label for="eq-band-1600">1.6kHz</label>
+            <input id="eq-band-1600" type="range" min="-15" max="15" step="1" value="0" data-freq="1600" data-q="1.4" aria-label="Banda 1.6kHz" />
+          </div>
+          <div class="eq-band">
+            <label for="eq-band-3200">3.2kHz</label>
+            <input id="eq-band-3200" type="range" min="-15" max="15" step="1" value="0" data-freq="3200" data-q="1.4" aria-label="Banda 3.2kHz" />
+          </div>
+          <div class="eq-band">
+            <label for="eq-band-6400">6.4kHz</label>
+            <input id="eq-band-6400" type="range" min="-15" max="15" step="1" value="0" data-freq="6400" data-q="1.4" aria-label="Banda 6.4kHz" />
+          </div>
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="equalizer" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="delay">
+        <img src="assets/pedals/delay.png" alt="Delay" />
+        <h2>Delay</h2>
+        <div class="control-group">
+          <label for="delay-tempo">Tempo (ms)</label>
+          <input id="delay-tempo" type="range" min="50" max="1000" step="10" value="300" aria-label="Tempo do Delay" />
+        </div>
+        <div class="control-group">
+          <label for="delay-feedback">Feedback</label>
+          <input id="delay-feedback" type="range" min="0" max="0.95" step="0.05" value="0.4" aria-label="Feedback do Delay" />
+        </div>
+        <div class="control-group">
+          <label for="delay-mix">Mix</label>
+          <input id="delay-mix" type="range" min="0" max="1" step="0.05" value="0.3" aria-label="Mix do Delay" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="delay" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="boss_bf_2_flanger">
+        <img src="assets/pedals/boss_bf_2_flanger.png" alt="BOSS BF 2 Flanger" />
+        <h2>BOSS BF 2 Flanger</h2>
+        <div class="control-group">
+          <label for="bf2flanger-rate">Rate</label>
+          <input id="bf2flanger-rate" type="range" min="0" max="10" step="0.1" value="5" aria-label="Rate do BOSS BF 2 Flanger" />
+        </div>
+        <div class="control-group">
+          <label for="bf2flanger-depth">Depth</label>
+          <input id="bf2flanger-depth" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="Depth do BOSS BF 2 Flanger" />
+        </div>
+        <div class="control-group">
+          <label for="bf2flanger-feedback">Feedback</label>
+          <input id="bf2flanger-feedback" type="range" min="-1" max="1" step="0.01" value="0" aria-label="Feedback do BOSS BF 2 Flanger" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="boss_bf_2_flanger" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="carmilla_distortion">
+        <img src="assets/pedals/carmilla_distortion.png" alt="Carmilla Distortion" />
+        <h2>Carmilla Distortion</h2>
+        <div class="control-group">
+          <label for="carmilla_gain">Gain</label>
+          <input id="carmilla_gain" type="range" min="0" max="10" step="0.1" value="7" aria-label="Gain do Carmilla Distortion" />
+        </div>
+        <div class="control-group">
+          <label for="carmilla_volume">Volume</label>
+          <input id="carmilla_volume" type="range" min="0" max="10" step="0.1" value="8" aria-label="Volume do Carmilla Distortion" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="carmilla_distortion" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="compressor_guitarra">
+        <img src="assets/pedals/compressor.png" alt="Compressor Guitarra" />
+        <h2>Compressor Guitarra</h2>
+        <div class="control-group">
+          <label for="compressor_threshold">Threshold</label>
+          <input id="compressor_threshold" type="range" min="-60" max="0" step="1" value="-20" aria-label="Threshold do Compressor" />
+        </div>
+        <div class="control-group">
+          <label for="compressor_ratio">Ratio</label>
+          <input id="compressor_ratio" type="range" min="1" max="20" step="0.1" value="4" aria-label="Ratio do Compressor" />
+        </div>
+        <div class="control-group">
+          <label for="compressor_attack">Attack</label>
+          <input id="compressor_attack" type="range" min="0" max="100" step="1" value="10" aria-label="Attack do Compressor" />
+        </div>
+        <div class="control-group">
+          <label for="compressor_release">Release</label>
+          <input id="compressor_release" type="range" min="0" max="500" step="10" value="100" aria-label="Release do Compressor" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="compressor_guitarra" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="fuzz">
+        <img src="assets/pedals/fuzz.png" alt="Fuzz" />
+        <h2>Fuzz</h2>
+        <div class="led-indicator"></div>
+        <div class="control-group">
+          <label for="fuzz_gain">Gain</label>
+          <input id="fuzz_gain" type="range" min="0" max="10" step="0.1" value="6" aria-label="Gain do Fuzz" />
+        </div>
+        <div class="control-group">
+          <label for="fuzz_volume">Volume</label>
+          <input id="fuzz_volume" type="range" min="0" max="10" step="0.1" value="7" aria-label="Volume do Fuzz" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="fuzz" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="pure_sky">
+        <img src="assets/pedals/pure_sky.png" alt="PureSky" />
+        <h2>PureSky</h2>
+        <div class="control-group">
+          <label for="pure_sky_param1">Parameter 1</label>
+          <input id="pure_sky_param1" type="range" min="0" max="10" step="0.1" value="5" aria-label="Parameter 1 do PureSky" />
+        </div>
+        <div class="control-group">
+          <label for="pure_sky_param2">Parameter 2</label>
+          <input id="pure_sky_param2" type="range" min="0" max="10" step="0.1" value="5" aria-label="Parameter 2 do PureSky" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="pure_sky" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="ultra_flanger_uf100">
+        <img src="assets/pedals/ultra_flanger_uf100.png" alt="Ultra Flanger UF100" />
+        <h2>Ultra Flanger UF100</h2>
+        <div class="control-group">
+          <label for="ultra_flanger_rate">Rate</label>
+          <input id="ultra_flanger_rate" type="range" min="0" max="10" step="0.1" value="5" aria-label="Rate do Ultra Flanger UF100" />
+        </div>
+        <div class="control-group">
+          <label for="ultra_flanger_depth">Depth</label>
+          <input id="ultra_flanger_depth" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="Depth do Ultra Flanger UF100" />
+        </div>
+        <div class="control-group">
+          <label for="ultra_flanger_feedback">Feedback</label>
+          <input id="ultra_flanger_feedback" type="range" min="-1" max="1" step="0.01" value="0" aria-label="Feedback do Ultra Flanger UF100" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="ultra_flanger_uf100" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="vintage_overdrive">
+        <img src="assets/pedals/vintage_overdrive.png" alt="Vintage Overdrive" />
+        <h2>Vintage Overdrive</h2>
+        <div class="control-group">
+          <label for="vintage_gain">Gain</label>
+          <input id="vintage_gain" type="range" min="0" max="10" step="0.1" value="6" aria-label="Gain do Vintage Overdrive" />
+        </div>
+        <div class="control-group">
+          <label for="vintage_tone">Tone</label>
+          <input id="vintage_tone" type="range" min="0" max="10" step="0.1" value="5" aria-label="Tone do Vintage Overdrive" />
+        </div>
+        <div class="control-group">
+          <label for="vintage_volume">Volume</label>
+          <input id="vintage_volume" type="range" min="0" max="10" step="0.1" value="7" aria-label="Volume do Vintage Overdrive" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="vintage_overdrive" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="wahwah">
+        <img src="assets/pedals/wahwah.png" alt="WahWah" />
+        <h2>WahWah</h2>
+        <div class="control-group">
+          <label for="wahwah-rate">Rate</label>
+          <input id="wahwah-rate" type="range" min="0.1" max="10" step="0.1" value="1.5" aria-label="Rate do WahWah" />
+        </div>
+        <div class="control-group">
+          <label for="wahwah-minfreq">Min Freq</label>
+          <input id="wahwah-minfreq" type="range" min="100" max="2000" step="10" value="400" aria-label="Frequência mínima do WahWah" />
+        </div>
+        <div class="control-group">
+          <label for="wahwah-maxfreq">Max Freq</label>
+          <input id="wahwah-maxfreq" type="range" min="1000" max="7000" step="10" value="5000" aria-label="Frequência máxima do WahWah" />
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="wahwah" aria-pressed="false">Ligar</button>
+      </article>
+
+      <article class="pedal" id="tuner">
+        <img src="assets/pedals/tuner.png" alt="Afinador" />
+        <h2>Tuner</h2>
+        <div class="tuner-display" role="region" aria-label="Display do afinador">
+          <div class="tuner-indicator low" id="tuner-low" aria-hidden="true">&lt;&lt;&lt;</div>
+          <div class="tuner-note" id="tuner-note" aria-live="polite" aria-atomic="true">--</div>
+          <div class="tuner-indicator high" id="tuner-high" aria-hidden="true">&gt;&gt;&gt;</div>
+        </div>
+        <button type="button" class="effect-toggle" data-pedal="tuner" aria-pressed="false">Ligar</button>
+      </article>
+
+    </section>
+  </main>
+
+  <script type="module" src="/frontend/js/main.js"></script>
+
+
+</body>
+</html>

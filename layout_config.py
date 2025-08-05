@@ -1,0 +1,24 @@
+# layout_config.py
+
+# --- JANELA PRINCIPAL ---
+WINDOW_TITLE = "Pedalboard Virtual Pro 🎸"
+WINDOW_GEOMETRY = "1300x900"
+
+# --- LAYOUT DO PEDALBOARD ---
+PEDALBOARD_COLUMNS = 6
+PEDAL_PADDING_X = 20    
+PEDAL_PADDING_Y = 20
+
+# --- CORES E TEMA ---
+COLOR_BACKGROUND = "#202124"
+COLOR_FOREGROUND = "#e8eaed"
+COLOR_PEDAL_FRAME = "#2c2c2e"
+COLOR_HIGHLIGHT = "#f39c12"
+COLOR_BORDER = "#444"
+
+# --- FONTES ---
+FONT_APP_TITLE = ("Segoe UI", 16, "bold")
+FONT_PEDAL_TITLE = ("Segoe UI", 12, "bold")
+FONT_CONTROL_LABEL = ("Segoe UI", 9)
+FONT_TUNER = ("Segoe UI", 14, "bold")
+

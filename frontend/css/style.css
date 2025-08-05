@@ -1,0 +1,321 @@
+/* --- 1. CONFIGURAÇÕES GLOBAIS E VARIÁVEIS --- */
+:root {
+  --cor-fundo: #202124;
+  --cor-pedal: #2c2c2e;
+  --cor-principal: #f39c12; /* Laranja/Amarelo */
+  --cor-secundaria: #ffb347; /* Laranja mais claro para hover */
+  --cor-texto: #e8eaed;
+  --cor-sucesso: #4caf50; /* Verde para 'in-tune' */
+  --cor-aviso: #ffc107;   /* Âmbar para indicadores de afinação */
+  --cor-desligado: #555;
+  --fonte-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --fonte-display: 'Courier New', Courier, monospace;
+}
+
+* {
+  box-sizing: border-box; /* Regra essencial para layouts previsíveis */
+  margin: 0;
+  padding: 0;
+}
+
+.led-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--cor-desligado);
+  margin: 10px auto;
+  box-shadow: 0 0 5px transparent;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.pedal.active .led-indicator {
+  background-color: var(--cor-principal);
+  box-shadow: 0 0 10px var(--cor-principal);
+}
+
+/* Estilo simples para o seletor de dispositivos */
+.device-selectors {
+  background-color: #222;
+  color: #eee;
+  padding: 10px 15px;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      justify-content: center;
+    }
+    .device-selectors label {
+      margin-right: 5px;
+      font-weight: 600;
+    }
+    .device-selectors select {
+      background-color: #333;
+      border: 1px solid #555;
+      color: #eee;
+      padding: 5px 10px;
+      border-radius: 4px;
+      min-width: 180px;
+    }
+  
+    /* Estilo simples para o seletor de dispositivos */
+    .device-selectors {
+      background-color: #222;
+      color: #eee;
+      padding: 10px 15px;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      justify-content: center;
+    }
+    .device-selectors label {
+      margin-right: 5px;
+      font-weight: 600;
+    }
+    .device-selectors select {
+      background-color: #333;
+      border: 1px solid #555;
+      color: #eee;
+      padding: 5px 10px;
+      border-radius: 4px;
+      min-width: 180px;
+    }
+
+body {
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: var(--fonte-principal);
+  padding: 20px;
+}
+
+/* --- 2. LAYOUT PRINCIPAL --- */
+.title {
+  text-align: center;
+  font-size: 2.5em;
+  margin-bottom: 40px;
+  color: var(--cor-principal);
+}
+
+.pedalboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  padding-bottom: 40px; /* Espaço extra no final */
+}
+
+/* --- 3. ESTILO GERAL DOS PEDAIS --- */
+.pedal {
+  background: var(--cor-pedal);
+  border: 2px solid transparent; /* Borda para o estado ativo */
+  border-radius: 15px;
+  padding: 20px;
+  width: 260px; /* Um pouco mais de largura */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.pedal:hover {
+  transform: translateY(-5px); /* Efeito de elevação mais sutil */
+}
+
+.pedal.active {
+  border-color: var(--cor-principal);
+  box-shadow: 0 0 20px 0px var(--cor-secundaria);
+}
+
+.pedal img {
+  max-width: 100px;
+  margin-bottom: 10px;
+}
+
+.pedal h2 {
+  margin: 10px 0;
+  color: var(--cor-principal);
+}
+
+.pedal label {
+  display: block;
+  margin-top: 15px;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+/* --- 4. ESTILO DOS COMPONENTES (BOTÕES, SLIDERS) --- */
+
+/* Estilo unificado para o botão de toggle */
+.pedal button.effect-toggle {
+  margin-top: 20px;
+  padding: 10px 18px;
+  background-color: var(--cor-desligado);
+  color: var(--cor-texto);
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pedal button.effect-toggle:hover {
+  background-color: #777;
+}
+
+.pedal button.effect-toggle.active {
+  background-color: var(--cor-principal);
+  color: #000;
+}
+
+.pedal button.effect-toggle.active:hover {
+  background-color: var(--cor-secundaria);
+}
+
+/* Estilo customizado para os sliders (input range) */
+input[type="range"] {
+  background: linear-gradient(to right, var(--cor-principal), #222);
+  -webkit-appearance: none;
+  width: 90%;
+  height: 8px;
+  background: #444;
+  border-radius: 5px;
+  outline: none;
+  margin-top: 5px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--cor-principal);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid var(--cor-pedal);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--cor-principal);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid var(--cor-pedal);
+}
+
+
+/* --- 5. ESTILOS ESPECÍFICOS DOS PEDAIS --- */
+
+/* CORREÇÃO: Layout do Equalizador Gráfico */
+.graphic-eq-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  padding: 10px 0;
+  gap: 12px;
+}
+
+.eq-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.8em;
+}
+
+.eq-band input[type="range"] {
+  -webkit-appearance: slider-vertical; /* Orienta o slider na vertical */
+  writing-mode: bt-lr;
+  width: 15px;
+  height: 100px;
+}
+
+/* Layout para os knobs do Chorus */
+.knob-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 10px;
+}
+.knob {
+  width: 45%;
+}
+
+/* Layout para o switch do Chorus */
+.switch-group {
+  margin-top: 15px;
+}
+.switch-group select {
+  background-color: #444;
+  color: var(--cor-texto);
+  border: 1px solid var(--cor-desligado);
+  border-radius: 5px;
+  padding: 5px;
+}
+
+
+/* Afinador (Tuner) */
+.tuner-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1a1a1a;
+  border: 2px solid #333;
+  border-radius: 5px;
+  padding: 15px 20px;
+  margin: 15px auto;
+  font-family: var(--fonte-display);
+  width: 100%;
+  box-shadow: inset 0 0 10px #000;
+}
+
+.tuner-note {
+  font-size: 3em;
+  font-weight: bold;
+  color: #ff4d4d;
+  transition: color 0.2s, text-shadow 0.2s;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.tuner-indicator {
+  font-size: 2em;
+  font-weight: bold;
+  color: #333;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+
+.tuner-indicator.low.active,
+.tuner-indicator.high.active {
+  color: var(--cor-aviso);
+  text-shadow: 0 0 10px var(--cor-aviso);
+}
+
+.tuner-note.in-tune {
+  color: var(--cor-sucesso);
+  text-shadow: 0 0 15px var(--cor-sucesso);
+}
+
+
+/* Estilo para o botão de Iniciar Áudio */
+#start-audio-btn {
+  display: block;
+  margin: 0 auto 40px auto;
+  padding: 15px 30px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #000;
+  background-color: var(--cor-sucesso);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+#start-audio-btn:hover {
+  background-color: #5dcf61;
+}
+#start-audio-btn:disabled {
+  background-color: var(--cor-desligado);
+  color: #999;
+  cursor: not-allowed;
+}
