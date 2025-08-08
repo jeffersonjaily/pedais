@@ -1,23 +1,25 @@
-# Arquivo: backend/effects/pedal_control.py
+# backend/effects/pedal_control.py
 
 import tkinter as tk
 from tkinter import ttk
-from backend import audio_interface # ou qualquer que seja seu módulo de comunicação
+from backend import audio_interface
 
 class PedalControl(ttk.Frame):
     """
-    Cria a interface gráfica para um único pedal, com base em sua configuração.
-    Esta classe cria os sliders, checkboxes e dropdowns necessários.
+    Cria a interface gráfica para um único pedal. Agora, ele sabe a que
+    cadeia de efeitos (ex: 'instrument' ou 'voice') pertence.
     """
-    def __init__(self, master, effect_name, config):
+    def __init__(self, master, chain_type, effect_name, config):
         super().__init__(master, padding=10)
+        self.chain_type = chain_type  # NOVO: Guarda o tipo de cadeia ('instrument' ou 'voice')
         self.effect_name = effect_name
         self.config = config
         
+        self.parent_frame = master
         self.param_vars = {}
 
-        # Checkbox para ativar/desativar o pedal
-        self.enabled_var = tk.BooleanVar(value=audio_interface.is_effect_enabled(self.effect_name))
+        # A chamada agora inclui o chain_type
+        self.enabled_var = tk.BooleanVar(value=audio_interface.is_effect_enabled(self.chain_type, self.effect_name))
         self.enable_button = ttk.Checkbutton(
             self,
             text="Ativado",
@@ -26,8 +28,7 @@ class PedalControl(ttk.Frame):
         )
         self.enable_button.pack(anchor='w', pady=(0, 10))
 
-        # Loop que cria os controles (sliders, dropdowns, etc.)
-        params_config = self.config.get('params', {}) # CORREÇÃO: Usar {} como padrão para dicionários
+        params_config = self.config.get('params', {})
         for param_name, param_config in params_config.items():
             param_type = param_config.get('type')
             
@@ -37,8 +38,10 @@ class PedalControl(ttk.Frame):
             label = ttk.Label(frame, text=param_config.get('label', param_name), width=15)
             label.pack(side='left')
 
+            default_value = audio_interface.get_param_value(self.chain_type, self.effect_name, param_name, param_config.get('default'))
+
             if param_type == 'slider':
-                variable = tk.DoubleVar(value=param_config.get('default', 0))
+                variable = tk.DoubleVar(value=default_value)
                 slider = ttk.Scale(
                     frame,
                     from_=param_config.get('min', 0),
@@ -51,56 +54,41 @@ class PedalControl(ttk.Frame):
                 self.param_vars[param_name] = variable
 
             elif param_type in ['combo', 'dropdown']:
-                default_value = param_config.get('default', '')
-                options = param_config.get('options', [])
                 variable = tk.StringVar(value=default_value)
-                
-                combobox = ttk.Combobox(
-                    frame,
-                    textvariable=variable,
-                    values=options,
-                    state="readonly"
-                )
+                combobox = ttk.Combobox(frame, textvariable=variable, values=param_config.get('options', []), state="readonly")
                 combobox.pack(side='left', fill='x', expand=True)
                 combobox.set(default_value)
-                combobox.bind(
-                    "<<ComboboxSelected>>",
-                    lambda event, name=param_name: self.update_param(name, event.widget.get())
-                )
+                combobox.bind("<<ComboboxSelected>>", lambda event, name=param_name: self.update_param(name, event.widget.get()))
                 self.param_vars[param_name] = variable
-
-            elif param_type == 'checkbox':
-                variable = tk.BooleanVar(value=param_config.get('default', False))
-                checkbox = ttk.Checkbutton(
-                    frame,
-                    variable=variable,
-                    command=lambda name=param_name: self.update_param(name, variable.get())
-                )
-                checkbox.pack(side='left')
-                self.param_vars[param_name] = variable
+        
+        self._update_visual_state()
 
     def toggle_effect(self):
-        """Notifica o backend que o pedal foi ativado ou desativado."""
+        """Notifica o backend sobre a mudança de estado, especificando a cadeia."""
         is_enabled = self.enabled_var.get()
-        audio_interface.toggle_effect(self.effect_name, is_enabled)
+        audio_interface.toggle_effect(self.chain_type, self.effect_name, is_enabled)
+        self._update_visual_state()
 
     def update_param(self, param_name, value):
-        """Notifica o backend que um parâmetro do pedal mudou."""
-        # --- CORREÇÃO ESTÁ AQUI ---
-        # O nome da função correta no seu backend é 'update_param'.
-        audio_interface.update_param(self.effect_name, param_name, value)
+        """Notifica o backend sobre a mudança de um parâmetro, especificando a cadeia."""
+        audio_interface.update_param(self.chain_type, self.effect_name, param_name, value)
     
+    def _update_visual_state(self):
+        """Muda o estado visual do pedal (borda destacada)."""
+        if self.enabled_var.get():
+            self.parent_frame.state(['active'])
+        else:
+            self.parent_frame.state(['!active'])
+
     def sync_with_state(self):
-        """
-        Sincroniza os controles da UI com o estado atual do backend.
-        """
-        # Esta função precisa ser chamada ao carregar um preset.
-        # Vamos pegar o estado diretamente do backend.
-        is_enabled = audio_interface.is_effect_enabled(self.effect_name)
+        """Sincroniza a UI com o estado do backend ao carregar presets."""
+        is_enabled = audio_interface.is_effect_enabled(self.chain_type, self.effect_name)
         self.enabled_var.set(is_enabled)
         
         for name, var in self.param_vars.items():
-            default_value = self.config['params'][name].get('default')
-            value = audio_interface.get_param_value(self.effect_name, name, default_value)
+            default_value = self.config.get('params', {}).get(name, {}).get('default')
+            value = audio_interface.get_param_value(self.chain_type, self.effect_name, name, default_value)
             if value is not None:
                 var.set(value)
+        
+        self._update_visual_state()
