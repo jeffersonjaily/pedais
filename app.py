@@ -7,8 +7,9 @@ import subprocess
 from queue import Empty
 import json
 
-# --- ATIVAÇÃO DO ASIO ---
+# --- ATIVAÇÃO DO ASIO E FlexASIO---
 os.environ['SD_ENABLE_ASIO'] = '1'
+os.environ['SD_ENABLE_FLEXASIO'] = '1'
 
 # --- IMPORTS DOS MÓDULOS ---
 from backend import audio_interface
@@ -33,7 +34,10 @@ class App(tk.Tk):
         self.tuner_enabled_var = tk.BooleanVar(value=False)
         self.stream_running = False
         self.is_recording = False
-        
+        self.is_recording_paused = False
+        self.inst_enabled_var = tk.BooleanVar(value=True)
+        self.voice_enabled_var = tk.BooleanVar(value=True)
+
         self.pedal_widgets = {'instrument': [], 'voice': []}
         self.pedal_frames = {'instrument': [], 'voice': []}
         
@@ -57,6 +61,7 @@ class App(tk.Tk):
         
         self.bind("<KeyPress>", self._handle_keypress)
         self.update_tuner_display()
+        self.update_recording_time()
 
     def create_main_frame_with_tabs(self):
         main_frame = ttk.Frame(self)
@@ -171,24 +176,43 @@ class App(tk.Tk):
         
         device_frame = ttk.Frame(main_audio_frame)
         device_frame.pack(fill='x', expand=True)
-        device_frame.columnconfigure((1, 3, 5), weight=1)
 
+        # Controles do Dispositivo
         ttk.Label(device_frame, text="Dispositivo:").grid(row=0, column=0, padx=(0, 5), sticky="w")
         self.input_cb = ttk.Combobox(device_frame, state="readonly", width=25)
-        self.input_cb.grid(row=0, column=1, columnspan=5, sticky="ew")
+        self.input_cb.grid(row=0, column=1, columnspan=5, sticky="ew", pady=(0, 10))
         self.input_cb.bind("<<ComboboxSelected>>", self._update_channel_selectors)
 
-        # --- NOVOS SELETORES DE CANAL ---
-        ttk.Label(device_frame, text="Entrada Guitarra:").grid(row=1, column=0, padx=(0, 5), pady=(5,0), sticky="w")
-        self.instrument_channel_cb = ttk.Combobox(device_frame, state="readonly", width=15)
-        self.instrument_channel_cb.grid(row=1, column=1, pady=(5,0), sticky="w")
+        # --- NOVA ESTRUTURA MELHORADA PARA OS CONTROLES DE CANAL ---
+        channel_controls_frame = ttk.Frame(device_frame)
+        channel_controls_frame.grid(row=1, column=0, columnspan=6, sticky="ew")
+
+        # Frame para os controles da Guitarra
+        guitar_frame = ttk.Frame(channel_controls_frame)
+        guitar_frame.pack(side="left", padx=(0, 10))
+        ttk.Label(guitar_frame, text="Guitarra:").pack(side="left")
+        
+        self.instrument_channel_cb = ttk.Combobox(guitar_frame, state="readonly", width=10)
+        self.instrument_channel_cb.pack(side="left", padx=5)
         self.instrument_channel_cb.bind("<<ComboboxSelected>>", self._on_channel_mapping_change)
+        
+        self.inst_enabled_var.trace_add('write', lambda *args: self._toggle_input_channel('instrument', self.inst_enabled_var.get()))
+        self.inst_enable_cb = ttk.Checkbutton(guitar_frame, text="Ativar", variable=self.inst_enabled_var)
+        self.inst_enable_cb.pack(side="left", padx=(5, 0))
 
-        ttk.Label(device_frame, text="Entrada Voz:").grid(row=1, column=2, padx=(10, 5), pady=(5,0), sticky="w")
-        self.voice_channel_cb = ttk.Combobox(device_frame, state="readonly", width=15)
-        self.voice_channel_cb.grid(row=1, column=3, pady=(5,0), sticky="w")
+        # Frame para os controles da Voz
+        voice_frame = ttk.Frame(channel_controls_frame)
+        voice_frame.pack(side="left")
+        ttk.Label(voice_frame, text="Voz:").pack(side="left")
+        
+        self.voice_channel_cb = ttk.Combobox(voice_frame, state="readonly", width=10)
+        self.voice_channel_cb.pack(side="left", padx=5)
         self.voice_channel_cb.bind("<<ComboboxSelected>>", self._on_channel_mapping_change)
-
+        
+        self.voice_enabled_var.trace_add('write', lambda *args: self._toggle_input_channel('voice', self.voice_enabled_var.get()))
+        self.voice_enable_cb = ttk.Checkbutton(voice_frame, text="Ativar", variable=self.voice_enabled_var)
+        self.voice_enable_cb.pack(side="left")
+        
         self.populate_devices()
         
         control_frame = ttk.Frame(main_audio_frame)
@@ -198,8 +222,15 @@ class App(tk.Tk):
         self.start_btn.pack(side="left", padx=(0,10))
         self.stop_btn = ttk.Button(control_frame, text="■ Parar", command=self.stop_stream, state="disabled")
         self.stop_btn.pack(side="left")
-        self.record_btn = ttk.Button(control_frame, text="● Gravar", command=self.toggle_recording)
-        self.record_btn.pack(side="left", padx=(20, 0))
+        
+        recording_controls_frame = ttk.Frame(control_frame)
+        recording_controls_frame.pack(side="left", padx=(20, 0))
+        
+        self.record_btn = ttk.Button(recording_controls_frame, text="● Gravar", command=self.toggle_recording)
+        self.record_btn.pack(side="left")
+
+        self.pause_record_btn = ttk.Button(recording_controls_frame, text="❚❚ Pausar", command=self.toggle_recording_pause, state="disabled")
+        self.pause_record_btn.pack(side="left", padx=(10,0))
         
         self.master_volume_var = tk.DoubleVar(value=1.0)
         master_slider = ttk.Scale(control_frame, from_=0, to=1.5, orient="horizontal", variable=self.master_volume_var, command=lambda v: audio_interface.set_master_volume(v))
@@ -209,18 +240,34 @@ class App(tk.Tk):
         self.mini_player = MiniPlayer(main_audio_frame)
         self.mini_player.pack(fill='x', expand=True, pady=(5,0))
 
+        recording_options_frame = ttk.Frame(main_audio_frame)
+        recording_options_frame.pack(fill='x', expand=True, pady=(5,0))
+        self.record_inst_var = tk.BooleanVar(value=True)
+        self.record_voice_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(recording_options_frame, text="Gravar Guitarra (Processado)", variable=self.record_inst_var).pack(side="left", padx=5)
+        ttk.Checkbutton(recording_options_frame, text="Gravar Voz (Processado)", variable=self.record_voice_var).pack(side="left", padx=5)
+
+        self.recording_time_label = ttk.Label(main_audio_frame, text="Gravação: 00:00:00", font=layout.FONT_TUNER, anchor="center")
+        self.recording_time_label.pack(fill='x', expand=True, pady=(10,0))
+        
         self.tuner_label = ttk.Label(main_audio_frame, text="Afinador: --", font=layout.FONT_TUNER, anchor="center")
         self.tuner_label.pack(fill='x', expand=True, pady=(10,0))
-
+        
     def populate_devices(self):
         self.devices_list = audio_interface.list_active_devices()
         in_devs = [d['name'] for d in self.devices_list if d['max_input_channels'] > 0]
         self.input_cb['values'] = in_devs
         
-        asio_device_name = "ASIO4ALL v2"
-        if asio_device_name in in_devs:
-            self.input_cb.set(asio_device_name)
-        else:
+        # A nova lógica de seleção de dispositivos ASIO
+        asio_device_names = ["ASIO4ALL v2", "FlexASIO"]
+        selected_device = None
+        for name in asio_device_names:
+            if name in in_devs:
+                self.input_cb.set(name)
+                selected_device = name
+                break
+        
+        if not selected_device:
             try:
                 default_in = audio_interface.sd.query_devices(kind='input')['name']
                 self.input_cb.set(default_in)
@@ -260,7 +307,13 @@ class App(tk.Tk):
 
         audio_interface.set_channel_mapping(inst_idx, voice_idx)
         print(f"Mapeamento de canais atualizado: Guitarra -> Canal {inst_idx+1}, Voz -> Canal {voice_idx+1}")
+        
+        self._toggle_input_channel('instrument', self.inst_enabled_var.get())
+        self._toggle_input_channel('voice', self.voice_enabled_var.get())
 
+    def _toggle_input_channel(self, chain_type, is_enabled):
+        audio_interface.toggle_input_channel(chain_type, is_enabled)
+        
     def create_menu(self):
         menubar = tk.Menu(self)
         audio_menu = tk.Menu(menubar, tearoff=0)
@@ -290,10 +343,34 @@ class App(tk.Tk):
             self.tuner_label.config(text="Afinador: --")
         self.after(100, self.update_tuner_display)
 
+    def update_recording_time(self):
+        if self.is_recording:
+            elapsed_time_seconds = audio_interface.get_recording_time()
+            if elapsed_time_seconds is not None:
+                h = int(elapsed_time_seconds // 3600)
+                m = int((elapsed_time_seconds % 3600) // 60)
+                s = int(elapsed_time_seconds % 60)
+                time_str = f"Gravação: {h:02d}:{m:02d}:{s:02d}"
+                self.recording_time_label.config(text=time_str)
+        else:
+            self.recording_time_label.config(text="Gravação: 00:00:00")
+        self.after(1000, self.update_recording_time)
+
     def start_stream(self):
         try:
             input_name = self.input_cb.get()
-            output_name = input_name 
+            if not input_name:
+                messagebox.showerror("Erro", "Dispositivo de áudio deve ser selecionado.")
+                return
+            
+            # Corrigido: Chama start_audio_stream() com apenas um argumento (input_name)
+            audio_interface.start_audio_stream(input_name)
+            
+            self.stream_running = True
+            self.start_btn.config(state="disabled")
+            self.stop_btn.config(state="normal")
+        except Exception as e:
+            messagebox.showerror("Erro de Áudio", f"Não foi possível iniciar o stream: {e}")
             if not input_name:
                 messagebox.showerror("Erro", "Dispositivo de áudio deve ser selecionado.")
                 return
@@ -309,12 +386,11 @@ class App(tk.Tk):
         self.stream_running = False
         self.start_btn.config(state="normal")
         self.stop_btn.config(state="disabled")
-
-        if self.is_recording:
-            audio_interface.stop_recording()
-            self.is_recording = False
-            self.record_btn.config(text="● Gravar")
-            self.record_btn.config(style="TButton")
+        self.is_recording = False
+        self.is_recording_paused = False
+        self.record_btn.config(text="● Gravar", style="TButton", state="normal")
+        self.pause_record_btn.config(state="disabled")
+        self.recording_time_label.config(text="Gravação: 00:00:00")
 
     def save_config(self):
         path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON Presets", "*.json")])
@@ -340,6 +416,16 @@ class App(tk.Tk):
             return
 
         if not self.is_recording:
+            channels_to_record = []
+            if self.record_inst_var.get():
+                channels_to_record.append(0)
+            if self.record_voice_var.get():
+                channels_to_record.append(1)
+
+            if not channels_to_record:
+                messagebox.showwarning("Aviso", "Selecione pelo menos um canal para gravação.")
+                return
+
             filepath = filedialog.asksaveasfilename(
                 defaultextension=".wav",
                 filetypes=[("WAV files", "*.wav")],
@@ -350,22 +436,35 @@ class App(tk.Tk):
                 return
             
             try:
-                audio_interface.start_recording(filepath)
+                audio_interface.start_recording(filepath, channels_to_record)
                 self.is_recording = True
-                self.record_btn.config(text="■ Parar Gravação")
-                self.record_btn.config(style="Danger.TButton")
+                self.is_recording_paused = False
+                self.record_btn.config(text="■ Parar Gravação", style="Danger.TButton")
+                self.pause_record_btn.config(text="❚❚ Pausar", state="normal")
                 print(f"Gravação iniciada em: {filepath}")
             except Exception as e:
                 messagebox.showerror("Erro de Gravação", f"Não foi possível iniciar a gravação:\n{e}")
                 self.is_recording = False
-                self.record_btn.config(text="● Gravar")
+                self.record_btn.config(text="● Gravar", style="TButton")
+                self.pause_record_btn.config(state="disabled")
 
         else:
             audio_interface.stop_recording()
             self.is_recording = False
-            self.record_btn.config(text="● Gravar")
-            self.record_btn.config(style="TButton")
+            self.is_recording_paused = False
+            self.record_btn.config(text="● Gravar", style="TButton")
+            self.pause_record_btn.config(text="❚❚ Pausar", state="disabled")
             print("Gravação finalizada.")
+
+    def toggle_recording_pause(self):
+        if self.is_recording:
+            result = audio_interface.toggle_recording_pause()
+            if result == 'paused':
+                self.is_recording_paused = True
+                self.pause_record_btn.config(text="▶ Retomar")
+            elif result == 'resumed':
+                self.is_recording_paused = False
+                self.pause_record_btn.config(text="❚❚ Pausar")
 
 if __name__ == "__main__":
     app = App()

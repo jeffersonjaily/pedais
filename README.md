@@ -4,15 +4,32 @@
 ![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow.svg)
 
-Um simulador de pedalboard de guitarra em tempo real, construído com Python, Tkinter e NumPy/SciPy. Processe o áudio da sua guitarra (ou qualquer outra fonte de som) através de uma cadeia de efeitos customizável com uma interface gráfica intuitiva.
+Um simulador de pedalboard de guitarra e voz em tempo real, construído com Python, Tkinter e NumPy/SciPy. Processe o áudio da sua guitarra, microfone ou qualquer outra fonte de som através de uma cadeia de efeitos customizável com uma interface gráfica intuitiva.
 
 ---
+
+## 🎤 Novidade: Efeitos de Voz
+
+Agora o **PedalPy** também suporta **efeitos profissionais para voz falada e cantada**, incluindo processamento vocal em tempo real com foco em clareza, correção, ambiência e limpeza.
+
+### 🎙️ Efeitos Vocais Inclusos
+
+| Categoria        | Efeitos Vocais                                                              |
+|------------------|------------------------------------------------------------------------------|
+| **Dinâmica**      | Vocal Compressor, De-Esser                                                  |
+| **Correção**      | Pitch Correction, Pitch Shifter                                             |
+| **Equalização**   | Equalizador Vocal de 10 bandas                                              |
+| **Ambiência**     | Delay Vocal, Reverb para Voz                                                |
+| **Modulação**     | Tremolo Vocal                                                               |
+| **Limpeza**       | Redução de Ruído, Supressor de Pops e Estalos de Boca (PopClickSuppressor) |
+
+Esses efeitos foram otimizados para **voz humana**, com foco especial em reduzir sibilância ("S" excessivo), ruído de fundo, clicks de boca, além de adicionar brilho e profundidade com reverb e delay de forma controlada.
 
 ---
 
 ## 🎸 Sobre o Projeto
 
-**PedalPy** nasceu da paixão por música e programação. O objetivo é criar uma plataforma de efeitos de áudio de código aberto, leve e extensível, que permita a músicos e desenvolvedores experimentar com processamento de sinais digitais (DSP) de uma forma visual e interativa.
+**PedalPy** nasceu da paixão por música e programação. O objetivo é criar uma plataforma de efeitos de áudio de código aberto, leve e extensível, que permita a músicos e desenvolvedores experimentar com processamento de sinais digitais (DSP) de forma visual e interativa.
 
 A interface permite arrastar e soltar os pedais para reordenar a cadeia de efeitos, salvar e carregar presets, e ajustar cada parâmetro em tempo real.
 
@@ -25,10 +42,11 @@ A interface permite arrastar e soltar os pedais para reordenar a cadeia de efeit
 * **Gravação Integrada:** Grave sua performance diretamente para um arquivo `.wav`.
 * **Afinador Cromático:** Um afinador visual integrado para manter seu instrumento no tom certo.
 * **Extensível:** A arquitetura é modular, facilitando a adição de novos efeitos.
+* **Suporte a Voz:** Efeitos dedicados a vocalistas, podcasters e streamers.
 
 ---
 
-### 🎛️ Efeitos Incluídos
+### 🎛️ Efeitos de Guitarra
 
 O projeto conta com uma vasta gama de efeitos clássicos e modernos, incluindo:
 
@@ -51,13 +69,13 @@ Siga estes passos para ter o projeto rodando na sua máquina.
 
 * **Python 3.9+**
 * **pip** (gerenciador de pacotes do Python)
-* Uma **interface de áudio** (para conectar sua guitarra ao computador com baixa latência) e drivers **ASIO** (recomendado no Windows).
+* Uma **interface de áudio** (para conectar sua guitarra/microfone ao computador com baixa latência) e drivers **ASIO** (recomendado no Windows).
 
 ### Instalação
 
 1.  **Clone o repositório:**
     ```sh
-    git clone [https://github.com/jeffersonjaily/pedais.git](https://github.com/jeffersonjaily/pedais.git)
+    git clone https://github.com/jeffersonjaily/pedais.git
     cd pedais
     ```
 
@@ -75,7 +93,6 @@ Siga estes passos para ter o projeto rodando na sua máquina.
     ```sh
     pip install -r requirements.txt
     ```
-   
 
 4.  **Execute a aplicação:**
     ```sh
@@ -115,6 +132,5 @@ Distribuído sob a licença MIT. Veja `LICENSE.txt` para mais informações.
 
 ## 🙏 Agradecimentos
 
-* Aos criadores das bibliotecas `NumPy`, `SciPy` e `SoundDevice`.
+* Aos criadores das bibliotecas `NumPy`, `SciPy`, `SoundDevice`, `Tkinter`.
 * À comunidade de DSP e desenvolvimento de áudio por compartilhar tanto conhecimento.
-
